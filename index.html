@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>御坂网络ID分配</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui, -apple-system, sans-serif}
+body{background:#f5f5f5;color:#222;padding:40px 20px;text-align:center;line-height:1.6}
+.wrap{max-width:400px;margin:0 auto}
+h1{font-size:22px;margin-bottom:20px;font-weight:normal}
+.id{font-size:36px;margin:30px 0;color:#111}
+button{padding:10px 24px;font-size:16px;border:1px solid #333;background:#fff;border-radius:4px;cursor:pointer}
+button:hover{background:#eaeaea}
+.tip{margin-top:20px;font-size:14px;color:#666}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>御坂网络ID分配</h1>
+<div class="id" id="id">加载中...</div>
+<button onclick="copy()">复制我的ID</button>
+<div class="tip">自动顺延编号</div>
+</div>
+
+<script>
+const BIN_URL="https://api.jsonbin.io/v3/b/6a1aeca6ddf5aa59f7786d07";
+const MASTER_KEY="$2a$10$eNbEnOD5amkpZrltg4Uwv.WMJV1LXN9EOrKgkAILUqqe57ceP8Iju";
+
+let myId=0;
+function fmt(n){return String(n).padStart(5,'0')}
+
+window.onload=async()=>{
+  try{
+    const r=await fetch(BIN_URL,{headers:{"X-Master-Key":MASTER_KEY}});
+    const d=await r.json();
+    const curr=d.record.current;
+    myId=curr;
+    document.getElementById('id').innerText=`御坂${fmt(myId)}号`;
+    await fetch(BIN_URL,{
+      method:"PUT",
+      headers:{"X-Master-Key":MASTER_KEY,"Content-Type":"application/json"},
+      body:JSON.stringify({current:curr+1})
+    })
+  }catch(e){
+    document.getElementById('id').innerText="分配失败"
+  }
+}
+function copy(){
+  if(!myId)return;
+  const t=`御坂${fmt(myId)}号`;
+  navigator.clipboard.writeText(t).then(()=>alert("已复制："+t))
+}
+</script>
+</body>
+</html>
